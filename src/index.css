@@ -120,11 +120,11 @@
 }
 
 @utility container {
-  padding-inline: 2rem;
+  padding-inline: 1rem;
   margin-inline: auto;
 
   @variant sm {
-    padding-inline: 2rem;
+    padding-inline: 1rem;
   }
 
   @variant lg {

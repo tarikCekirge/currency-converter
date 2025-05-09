@@ -9,12 +9,15 @@ import {
 import { data } from "@/data";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react"
+import { useDebounce } from 'use-debounce';
+
 
 
 
 const Converter = () => {
     const [currencyValues] = useState(data)
     const [amount, setAmount] = useState<number>(1);
+    const [debouncedAmount] = useDebounce(amount, 1000);
     const [fromCur, setFromCur] = useState("EUR")
     const [toCur, setToCur] = useState("USD")
     const [result, setResult] = useState<number | null>(null);
@@ -23,11 +26,11 @@ const Converter = () => {
 
     useEffect(() => {
         if (fromCur === toCur) {
-            setResult(amount);
+            setResult(debouncedAmount);
             return;
         }
 
-        if (!amount || isNaN(amount) || amount <= 0) return;
+        if (!debouncedAmount || isNaN(amount) || amount <= 0) return;
 
         const controller = new AbortController();
         setLoading(true);
@@ -36,7 +39,7 @@ const Converter = () => {
         (async () => {
             try {
                 const res = await fetch(
-                    `https://api.frankfurter.app/latest?amount=${amount}&from=${fromCur}&to=${toCur}`,
+                    `https://api.frankfurter.app/latest?amount=${debouncedAmount}&from=${fromCur}&to=${toCur}`,
                     { signal: controller.signal }
                 );
                 if (!res.ok) throw new Error("API error");
@@ -54,23 +57,21 @@ const Converter = () => {
         })();
 
         return () => controller.abort();
-    }, [amount, fromCur, toCur]);
+    }, [debouncedAmount, fromCur, toCur]);
 
     return (
         <section className="flex flex-col justify-center max-w-2xl mx-auto bg-muted dark:bg-muted p-4 rounded-md gap-4">
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-col sm:flex-row">
                 <Input
-                    className="flex-1"
+                    className="flex-1 "
                     placeholder="Amount"
                     type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
                     disabled={loading}
                     value={amount.toString()}
                     onChange={(e) => {
                         const value = e.target.value;
                         if (/^\d*$/.test(value)) {
-                            setAmount(Number(value));
+                            setAmount(value === "" ? 0 : Number(value));
                         }
                     }}
                     onKeyDown={(e) => {
@@ -83,8 +84,8 @@ const Converter = () => {
                         }
                     }}
                 />
-                <Select value={fromCur} onValueChange={setFromCur}>
-                    <SelectTrigger className="w-[180px]">
+                <Select value={fromCur} onValueChange={setFromCur} disabled={loading}>
+                    <SelectTrigger className="w-full sm:w-[180px]">
                         <SelectValue placeholder="From Currency" />
                     </SelectTrigger>
                     <SelectContent>
@@ -97,8 +98,8 @@ const Converter = () => {
                             ))}
                     </SelectContent>
                 </Select>
-                <Select value={toCur} onValueChange={setToCur}>
-                    <SelectTrigger className="w-[180px]">
+                <Select value={toCur} onValueChange={setToCur} disabled={loading}>
+                    <SelectTrigger className="w-full sm:w-[180px]">
                         <SelectValue placeholder="To Currency" />
                     </SelectTrigger>
                     <SelectContent>
@@ -112,7 +113,7 @@ const Converter = () => {
                     </SelectContent>
                 </Select>
             </div>
-            {loading && (
+            {loading && debouncedAmount === amount && (
                 <p className="text-center text-muted-foreground italic flex items-center justify-center gap-2">
                     <Loader2 className="animate-spin" />Converting...</p>
             )}
@@ -121,9 +122,9 @@ const Converter = () => {
                 <p className="text-center text-red-500">{error}</p>
             )}
 
-            {!loading && !error && result !== null && amount > 0 && (
+            {!loading && !error && result !== null && debouncedAmount > 0 && (
                 <p className="text-lg font-semibold text-center">
-                    {amount} {fromCur} = {result} {toCur}
+                    {debouncedAmount} {fromCur} = {result} {toCur}
                 </p>
             )}
         </section>
