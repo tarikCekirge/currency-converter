@@ -1,12 +1,19 @@
-import { Button } from './components/ui/button'
-import { ModeToggle } from './components/ui/mode-toggle'
+import Header from '@/components/layout/Header'
+import Footer from '@/components/layout/Footer'
+import Converter from '@/components/blocks/Conterter'
 
 const App = () => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-svh">
-      <Button>Click me</Button>
-      <ModeToggle />
-    </div>
+    <>
+      <Header />
+      <main className='py-4' >
+        <div className="container">
+          <Converter />
+        </div>
+
+      </main>
+      <Footer />
+    </>
   )
 }
 

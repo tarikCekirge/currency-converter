@@ -118,3 +118,28 @@
     @apply bg-background text-foreground;
   }
 }
+
+@utility container {
+  padding-inline: 2rem;
+  margin-inline: auto;
+
+  @variant sm {
+    padding-inline: 2rem;
+  }
+
+  @variant lg {
+    padding-inline: 2rem;
+  }
+
+  @variant xl {
+    padding-inline: 2rem;
+  }
+}
+
+#root {
+  @apply flex flex-col min-h-screen;
+}
+
+main {
+  @apply flex-1;
+}
